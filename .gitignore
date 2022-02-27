@@ -1,0 +1,8 @@
+build/*.su
+build/*.dll
+build/*.exe
+build/leaf*
+build/CMakeCache.txt
+build/Makefile
+build/CMakeFiles/
+build/cmake_install.cmake
