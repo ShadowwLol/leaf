@@ -1,4 +1,5 @@
 #include "../include/leaf.h"
+#include "../include/hash.h"
 #include <sys/stat.h>
 #include <errno.h>
 #include <dirent.h>
@@ -69,9 +70,13 @@ FN startup(char * cfg_path, char * acc_path){
 		}
 	}
 
+	/* Hashing Master-Password */
+	char hash[SHA256_OUT_LENGTH] = "\0";
+	sha256_string(pass1, hash);
+
 	/* Writing to configuration file */
 	FILE * fp = fopen(cfg_path, "w");
-	fprintf(fp, "[master]\npassword = \"%s\"", pass1);
+	fprintf(fp, "[master]\npassword = \"%s\"", hash);
 	fclose(fp);
 
 	return EX_S;
@@ -103,7 +108,11 @@ FN load(char * cfg_path){
 		MEL_echo(true);
 		putchar('\n');
 
-		if (0 == strncmp(password, pass, 1024)){
+		/* Hashing Master-Password */
+		char hash[SHA256_OUT_LENGTH] = "\0";
+		sha256_string(pass, hash);
+
+		if (0 == strncmp(password, hash, 1024)){
 			return EX_S;
 		}
 	}
