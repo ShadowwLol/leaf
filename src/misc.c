@@ -30,7 +30,7 @@ bool path_exists(const char * path){
 			zzz.lf
 */
 
-FN startup(char * cfg_path, char * acc_path){
+FN startup(unsigned char * key, unsigned char * iv, char * cfg_path, char * acc_path){
 	MEL_log(LOG_INFORMATION, "Creating configuration..");
 
 	mkpath(acc_path, 0755);
@@ -71,8 +71,11 @@ FN startup(char * cfg_path, char * acc_path){
 	}
 
 	/* Hashing Master-Password */
-	char hash[SHA256_OUT_LENGTH] = "\0";
-	sha256_string(pass1, hash);
+	char hash[SHA512_OUT_LENGTH] = "\0";
+	sha512_string(pass1, hash);
+
+	sha256_string(pass1, (char *)key);
+	sha256_string((char *)key, (char *)iv);
 
 	/* Writing to configuration file */
 	FILE * fp = fopen(cfg_path, "w");
@@ -82,7 +85,7 @@ FN startup(char * cfg_path, char * acc_path){
 	return EX_S;
 }
 
-FN load(char * cfg_path){
+FN load(unsigned char * key, unsigned char * iv, char * cfg_path){
 	MEL_log(LOG_INFORMATION, "Loading configuration..");
 	/* Reading from configuration file */
 	ini_t *config = ini_load(cfg_path);
@@ -109,10 +112,12 @@ FN load(char * cfg_path){
 		putchar('\n');
 
 		/* Hashing Master-Password */
-		char hash[SHA256_OUT_LENGTH] = "\0";
-		sha256_string(pass, hash);
+		char hash[SHA512_OUT_LENGTH] = "\0";
+		sha512_string(pass, hash);
 
 		if (0 == strncmp(password, hash, 1024)){
+			sha256_string(pass, (char *)key);
+			sha256_string((char *)key, (char *)iv);
 			return EX_S;
 		}
 	}

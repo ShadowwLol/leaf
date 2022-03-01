@@ -1,9 +1,13 @@
 #include "../include/leaf.h"
+#include "../include/hash.h"
 
 int32_t main(int32_t argc, char * argv[]){
 	MEL_set_color(TERM_YELLOW);
 	fprintf(stdout, "%s\n", EXEC);
 	MEL_clear_color();
+
+	unsigned char key[SHA256_OUT_LENGTH] = "\0";
+	unsigned char iv[SHA256_OUT_LENGTH]   = "\0";
 
 	String acc_path = init_str();
 	set_str(&acc_path, get_home_dir());
@@ -15,18 +19,22 @@ int32_t main(int32_t argc, char * argv[]){
 	append_str(&acc_path, "/.config/leafcfg/accounts/");
 
 	if (path_exists(acc_path.buffer)){
-		if (EX_F == load(cfg_path.buffer)){
+		if (EX_F == load(key, iv, cfg_path.buffer)){
 			remove_str(&cfg_path);
 			remove_str(&acc_path);
 			return EX_F;
 		}
 	}else{
-		if (EX_F == startup(cfg_path.buffer, acc_path.buffer)){
+		if (EX_F == startup(key, iv, cfg_path.buffer, acc_path.buffer)){
 			remove_str(&cfg_path);
 			remove_str(&acc_path);
 			return EX_F;
 		}
 	}
+
+	key[KEY_LENGTH] = '\0';
+	iv[IV_LENGTH] = '\0';
+	printf("key: [%s]\niv: [%s]\n",key, iv);
 
 	remove_str(&cfg_path);
 
